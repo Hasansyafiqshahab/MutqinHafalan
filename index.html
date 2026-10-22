@@ -3,15 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mutqin Tracker Pro v2</title>
-    <!-- Tailwind CSS -->
+    <title>Mutqin Tracker Pro</title>
+    
+    <!-- KONFIGURASI LOGO & PINTASAN APLIKASI (PWA) -->
+    <meta name="theme-color" content="#10b981">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="MutqinTracker">
+    <meta name="application-name" content="MutqinTracker">
+    
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='512' height='512'%3E%3Crect width='24' height='24' fill='%2310B981' rx='5'/%3E%3Cpath stroke='%23FFFFFF' fill='none' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' d='M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253'/%3E%3C/svg%3E">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='512' height='512'%3E%3Crect width='24' height='24' fill='%2310B981' rx='5'/%3E%3Cpath stroke='%23FFFFFF' fill='none' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' d='M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253'/%3E%3C/svg%3E">
+
+    <!-- Tailwind CSS & React -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- React & Babel -->
     <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0fdf4; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, Arial, sans-serif; background-color: #f0fdf4; }
     </style>
 </head>
 <body>
@@ -20,35 +30,107 @@
     <script type="text/babel">
         const { useState, useEffect } = React;
 
-        const AppLogo = () => (
-            <div className="flex items-center justify-center space-x-2 mb-6">
-                <svg className="w-10 h-10 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
-                </svg>
-                <h1 className="text-3xl font-extrabold text-emerald-800 tracking-tight">Mutqin<span className="text-emerald-500">Tracker</span></h1>
-            </div>
-        );
+        // KAMUS BAHASA (BILINGUAL)
+        const locales = {
+            id: {
+                addSantri: "+ Tambah Santri", daftarSantri: "Daftar Santri", noData: "Belum ada data. Silakan tambah santri.",
+                khatam: "Khatam 30 Juz 🎉", selesai: "Selesai", juz: "Juz", bukaPanelKhatam: "Buka Panel Pasca Khatam ➔",
+                bukaPanelSetoran: "Buka Panel Setoran ➔", kembali: "← Kembali", regSantri: "Registrasi Santri Baru",
+                namaLengkap: "Nama Lengkap", kontakPenyimak: "Kontak Penyimak (Opsional)", kontakSantri: "Kontak Santri (Opsional)",
+                hafalanAwal: "Hafalan Awal (Juz)", targetHarian: "Target (Hal/Hari)", simpanSantri: "Simpan Santri",
+                capaian: "Capaian", juzPenuh: "Juz Penuh", hal: "Hal", faseKhatam: "💎 FASE PASCA KHATAM 💎",
+                riyadhohTitle: "1. RIYADHOH (40 HARI)", riyadhohDesc: "Target: Membaca 30 Juz per hari selama 40 hari beruntun.",
+                hariKe: "Hari ke-", laporRiyadhoh: "Lapor Riyadhoh Selesai Hari Ini", tasmiTitle: "2. TASMI' 30 JUZ (1 DUDUKAN)",
+                tasmiDesc: "Target: Lulus ujian tasmi' 1 dudukan sebanyak 3 kali putaran.", putaranLulus: "Putaran Lulus:",
+                laporTasmi: "Lapor Lulus 1 Dudukan 30 Juz", murojaahHayatTitle: "3. MUROJAAH SEPANJANG HAYAT",
+                murojaahHayatDesc: "Target Istiqomah: 3 Juz per Hari (Berputar terus menerus).", targetDisetor: "Target Disetor Hari Ini",
+                dan: "dan", laporMurojaahHayat: "Lapor Murojaah Harian Selesai ➔", ujianIkatan: "⚠️ Tanggungan Ujian Ikatan Juz",
+                maks: "Maks", lulus: "Lulus ✓", ziyadahTitle: "1. ZIYADAH (HAFALAN BARU)", halAwal: "Hal Awal",
+                halAkhir: "Hal Akhir", simpanZiyadah: "Simpan Progres & Buka WA", takrirTitle: "2. TAKRIR (PENGIKAT)",
+                takrirDesc: "5 Hal sblm ziyadah baru + ziyadah baru", laporTakrir: "Lapor Takrir ➔",
+                murojaahTitle: "3. MUROJAAH BERURUTAN", batasHafalan: "Batas Hafalan", lapor: "Lapor ➔",
+                pilihTujuanWa: "Pilih Tujuan WA 📲", pilihTujuanDesc: "Silakan pilih siapa yang akan menerima laporan ini:",
+                penyimak: "Penyimak / Musyrif", santri: "Nomor Santri", tutup: "Tutup", belumAdaWa: "(Nomor tidak diisi)",
+                waZiyadah: "*LAPORAN ZIYADAH (Baru)*\n\n👤 Santri: {nama}\n📖 Hafalan Disetor: Hal {awal} s/d {akhir}\n📊 Posisi Hafalan: {juz} Juz\n\n_Semoga Allah berikan keistiqomahan._",
+                waTakrir: "*LAPORAN TAKRIR*\n\n👤 Santri: {nama}\n✅ Mengikat (5 Hal mundur + Ziyadah):\nHal {awal} s/d {akhir}\n\n_Takrir selesai._",
+                waMurojaah: "*LAPORAN MUROJAAH*\n\n👤 Santri: {nama}\n📚 Porsi Wajib: {beban}\n🎯 Disetor hari ini: {target}\n\n_Murojaah harian selesai._",
+                waRiyadhoh: "*LAPORAN RIYADHOH QUR'AN*\n\n👤 Santri: {nama}\n📖 Target: Tilawah 30 Juz / Hari\n✅ Progres: Hari ke-{day} dari 40 Hari\n\n_Alhamdulillah, istiqomah selalu._",
+                waTasmi: "*LAPORAN TASMI' 30 JUZ*\n\n👤 Santri: {nama}\n🎙️ Sekali Duduk 30 Juz\n✅ Progres: Ujian ke-{count} dari 3 Kali\n\n_Barakallahu fiikum._",
+                beban05: "Setengah (0.5) Juz", beban1: "1 Juz Penuh", beban2: "2 Juz Penuh", beban3: "3 Juz Penuh",
+                bebanHayat: "3 Juz Penuh (Murojaah Sepanjang Hayat)"
+            },
+            ar: {
+                addSantri: "+ إضافة طالب", daftarSantri: "قائمة الطلاب", noData: "لا توجد بيانات. يرجى إضافة طالب.",
+                khatam: "ختم 30 جزءًا 🎉", selesai: "أكمل:", juz: "جزء", bukaPanelKhatam: "فتح لوحة ما بعد الختم ➔",
+                bukaPanelSetoran: "فتح لوحة التسميع ➔", kembali: "العودة ➔", regSantri: "تسجيل طالب جديد",
+                namaLengkap: "الاسم الكامل", kontakPenyimak: "رقم المشرف (اختياري)", kontakSantri: "رقم الطالب (اختياري)",
+                hafalanAwal: "الحفظ الأولي (جزء)", targetHarian: "الهدف (صفحة/يوم)", simpanSantri: "حفظ الطالب",
+                capaian: "الإنجاز", juzPenuh: "أجزاء كاملة", hal: "صفحة", faseKhatam: "💎 مرحلة ما بعد الختم 💎",
+                riyadhohTitle: "١. الرياضة (٤٠ يومًا)", riyadhohDesc: "الهدف: تلاوة 30 جزءًا يوميًا لمدة 40 يومًا متتالية.",
+                hariKe: "اليوم الـ", laporRiyadhoh: "الإبلاغ عن إتمام الرياضة اليوم", tasmiTitle: "٢. تسميع ٣٠ جزء (جلسة واحدة)",
+                tasmiDesc: "الهدف: اجتياز اختبار تسميع 30 جزءًا في جلسة واحدة 3 مرات.", putaranLulus: "مرات الاجتياز:",
+                laporTasmi: "الإبلاغ عن اجتياز جلسة 30 جزء", murojaahHayatTitle: "٣. المراجعة مدى الحياة",
+                murojaahHayatDesc: "الهدف الدائم: 3 أجزاء يوميًا (دورة مستمرة).", targetDisetor: "الهدف المسمع اليوم",
+                dan: "و", laporMurojaahHayat: "الإبلاغ عن إتمام المراجعة اليومية ➔", ujianIkatan: "⚠️ اختبارات الربط المعلقة",
+                maks: "الأقصى", lulus: "اجتاز ✓", ziyadahTitle: "١. الزيادة (حفظ جديد)", halAwal: "صفحة البداية",
+                halAkhir: "صفحة النهاية", simpanZiyadah: "حفظ التقدم وفتح واتساب", takrirTitle: "٢. التكرار (الربط)",
+                takrirDesc: "٥ صفحات قبل الحفظ الجديد + الزيادة", laporTakrir: "الإبلاغ عن التكرار ➔",
+                murojaahTitle: "٣. المراجعة الدورية", batasHafalan: "حد الحفظ", lapor: "الإبلاغ ➔",
+                pilihTujuanWa: "اختر وجهة واتساب 📲", pilihTujuanDesc: "يرجى تحديد من سيتلقى هذا التقرير:",
+                penyimak: "المشرف / المستمع", santri: "رقم الطالب", tutup: "إغلاق", belumAdaWa: "(لم يتم إدخال الرقم)",
+                waZiyadah: "*تقرير الزيادة (حفظ جديد)*\n\n👤 الطالب: {nama}\n📖 الحفظ المسمع: ص {awal} إلى {akhir}\n📊 مستوى الحفظ: {juz} جزء\n\n_نسأل الله لك الثبات._",
+                waTakrir: "*تقرير التكرار*\n\n👤 الطالب: {nama}\n✅ الربط (5 صفحات قبل الحفظ الجديد + الزيادة):\nص {awal} إلى {akhir}\n\n_تم التكرار._",
+                waMurojaah: "*تقرير المراجعة*\n\n👤 الطالب: {nama}\n📚 المقدار الواجب: {beban}\n🎯 المسمع اليوم: {target}\n\n_تمت المراجعة اليومية._",
+                waRiyadhoh: "*تقرير رياضة القرآن*\n\n👤 الطالب: {nama}\n📖 الهدف: تلاوة 30 جزء / يوم\n✅ التقدم: اليوم الـ {day} من 40 يوم\n\n_الحمد لله، نسأل الله الثبات._",
+                waTasmi: "*تقرير تسميع 30 جزء*\n\n👤 الطالب: {nama}\n🎙️ جلسة واحدة لـ 30 جزء\n✅ التقدم: الاختبار الـ {count} من 3 مرات\n\n_بارك الله فيكم._",
+                beban05: "نصف (0.5) جزء", beban1: "جزء كامل", beban2: "جزآن كاملان", beban3: "3 أجزاء كاملة",
+                bebanHayat: "3 أجزاء كاملة (مراجعة مدى الحياة)"
+            }
+        };
+
+        // DAFTAR KODE NEGARA LENGKAP
+        const countryCodes = [
+            { code: '62', label: '🇮🇩 Indonesia (+62)' }, { code: '967', label: '🇾🇪 Yemen (+967)' },
+            { code: '966', label: '🇸🇦 Saudi Arabia (+966)' }, { code: '20', label: '🇪🇬 Egypt (+20)' },
+            { code: '60', label: '🇲🇾 Malaysia (+60)' }, { code: '673', label: '🇧🇳 Brunei (+673)' },
+            { code: '65', label: '🇸🇬 Singapore (+65)' }, { code: '971', label: '🇦🇪 UAE (+971)' },
+            { code: '974', label: '🇶🇦 Qatar (+974)' }, { code: '965', label: '🇰🇼 Kuwait (+965)' },
+            { code: '968', label: '🇴🇲 Oman (+968)' }, { code: '962', label: '🇯🇴 Jordan (+962)' },
+            { code: '973', label: '🇧🇭 Bahrain (+973)' }, { code: '90', label: '🇹🇷 Turkey (+90)' },
+            { code: '212', label: '🇲🇦 Morocco (+212)' }, { code: '213', label: '🇩🇿 Algeria (+213)' },
+            { code: '92', label: '🇵🇰 Pakistan (+92)' }, { code: '880', label: '🇧🇩 Bangladesh (+880)' },
+            { code: '91', label: '🇮🇳 India (+91)' }, { code: '44', label: '🇬🇧 UK (+44)' },
+            { code: '1', label: '🇺🇸 US/Canada (+1)' }, { code: '61', label: '🇦🇺 Australia (+61)' }
+        ];
 
         function App() {
             const [santriList, setSantriList] = useState([]);
             const [view, setView] = useState('home');
             const [activeSantri, setActiveSantri] = useState(null);
-            
-            // State untuk modal WA
             const [waModal, setWaModal] = useState({ isOpen: false, text: '', penyimakWa: '', santriWa: '' });
+            const [lang, setLang] = useState(localStorage.getItem('mutqinLang') || 'id');
+
+            const t = locales[lang];
+            const isRtl = lang === 'ar';
 
             useEffect(() => {
-                const savedData = localStorage.getItem('mutqinDataV2');
+                const savedData = localStorage.getItem('mutqinDataV5');
                 if (savedData) setSantriList(JSON.parse(savedData));
             }, []);
 
             useEffect(() => {
-                localStorage.setItem('mutqinDataV2', JSON.stringify(santriList));
+                localStorage.setItem('mutqinDataV5', JSON.stringify(santriList));
             }, [santriList]);
 
-            // Helper Konversi & Kalkulasi
-            const hitungJuzSekarang = (page) => Math.floor(page / 20); // 1 Juz = 20 Hal
-            const formatDate = (dateStr) => new Date(dateStr).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+            useEffect(() => {
+                localStorage.setItem('mutqinLang', lang);
+            }, [lang]);
+
+            const MAX_PAGES = 604;
+            const MAX_JUZ = 30;
+
+            const hitungJuzSekarang = (page) => Math.min(MAX_JUZ, Math.floor(page / 20));
+            const formatDate = (dateStr) => new Date(dateStr).toLocaleDateString(lang === 'ar' ? 'ar-EG' : 'id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
 
             const handleRegister = (e) => {
                 e.preventDefault();
@@ -58,38 +140,32 @@
                 const newSantri = {
                     id: Date.now(),
                     nama: formData.get('nama'),
-                    kodeNegara: formData.get('kodeNegara'),
+                    kodeNegaraPenyimak: formData.get('kodeNegaraPenyimak'),
                     noWaPenyimak: formData.get('noWaPenyimak').replace(/^0+/, ''),
+                    kodeNegaraSantri: formData.get('kodeNegaraSantri'),
                     noWaSantri: formData.get('noWaSantri').replace(/^0+/, ''),
                     targetHarian: parseInt(formData.get('targetHarian')),
-                    currentPage: hafalanAwalJuz * 20,
+                    currentPage: Math.min(MAX_PAGES, hafalanAwalJuz * 20),
+                    lastZiyadahAwal: Math.min(MAX_PAGES, hafalanAwalJuz * 20) + 1, 
                     currentMurojaahJuz: 1,
-                    ujianPending: [] // Tempat menampung ujian dudukan ikatan
+                    ujianPending: [], riyadhohDay: 0, tasmiCount: 0
                 };
-
                 setSantriList([...santriList, newSantri]);
                 setView('home');
             };
 
-            // LOGIKA PENCIPTAAN UJIAN IKATAN SAAT TEMBUS JUZ BARU
             const generateUjianIkatan = (oldPage, newPage) => {
-                const oldJuz = Math.floor(oldPage / 20);
-                const newJuz = Math.floor(newPage / 20);
+                const oldJuz = hitungJuzSekarang(oldPage);
+                const newJuz = hitungJuzSekarang(newPage);
                 let newUjians = [];
-                
-                if (newJuz > oldJuz) {
+                if (newJuz > oldJuz && newJuz <= MAX_JUZ) {
                     for (let j = oldJuz + 1; j <= newJuz; j++) {
                         let baseDate = new Date();
-                        
-                        // Ujian 1: 1 Dudukan Juz itu sendiri (Max 10 Hari)
                         let d1 = new Date(baseDate); d1.setDate(d1.getDate() + 10);
                         newUjians.push({ id: Date.now()+Math.random(), title: `1 Dudukan Juz ${j}`, type: 'Reguler', deadline: d1.toISOString() });
-                        
-                        // Ujian 2 & 3: Kelipatan 5 Juz
                         if (j % 5 === 0) {
                             let d2 = new Date(d1); d2.setDate(d2.getDate() + 5);
                             newUjians.push({ id: Date.now()+Math.random(), title: `1 Dudukan Juz ${j-4}-${j}`, type: 'Kelipatan 5', deadline: d2.toISOString() });
-                            
                             if (j >= 10) {
                                 let d3 = new Date(d2); d3.setDate(d3.getDate() + 10);
                                 newUjians.push({ id: Date.now()+Math.random(), title: `1 Dudukan Juz 1-${j}`, type: 'Akumulasi Besar', deadline: d3.toISOString() });
@@ -100,181 +176,265 @@
                 return newUjians;
             };
 
+            const formatWaMsg = (template, vars) => {
+                let msg = template;
+                for (const key in vars) { msg = msg.replace(`{${key}}`, vars[key]); }
+                return encodeURIComponent(msg);
+            };
+
             const bukaModalWa = (santri, pesan) => {
+                const kp = santri.kodeNegaraPenyimak || '62';
+                const ks = santri.kodeNegaraSantri || '62';
                 setWaModal({
-                    isOpen: true,
-                    text: encodeURIComponent(pesan),
-                    penyimakWa: `${santri.kodeNegara}${santri.noWaPenyimak}`,
-                    santriWa: `${santri.kodeNegara}${santri.noWaSantri}`
+                    isOpen: true, text: pesan,
+                    penyimakWa: santri.noWaPenyimak ? `${kp}${santri.noWaPenyimak}` : '',
+                    santriWa: santri.noWaSantri ? `${ks}${santri.noWaSantri}` : ''
                 });
             };
 
             const laporZiyadah = (santri, halAwal, halAkhir) => {
-                const text = `*LAPORAN ZIYADAH & TAKRIR*\n\n👤 Santri: ${santri.nama}\n📖 Ziyadah Baru: Hal ${halAwal} s/d ${halAkhir}\n✅ Takrir (5 Hal Mundur + Ziyadah): Hal ${Math.max(1, halAwal - 5)} s/d ${halAkhir}\n📊 Posisi Hafalan: ${hitungJuzSekarang(halAkhir)} Juz\n\n_Semoga Allah berikan keistiqomahan._`;
-                
-                const newUjians = generateUjianIkatan(santri.currentPage, halAkhir);
+                const finalAkhir = Math.min(MAX_PAGES, halAkhir);
+                const txt = formatWaMsg(t.waZiyadah, { nama: santri.nama, awal: halAwal, akhir: finalAkhir, juz: hitungJuzSekarang(finalAkhir) });
+                const newUjians = generateUjianIkatan(santri.currentPage, finalAkhir);
                 
                 const updatedList = santriList.map(s => {
-                    if(s.id === santri.id) {
-                        return { ...s, currentPage: halAkhir, ujianPending: [...s.ujianPending, ...newUjians] };
-                    }
+                    if(s.id === santri.id) return { ...s, currentPage: finalAkhir, lastZiyadahAwal: halAwal, ujianPending: [...s.ujianPending, ...newUjians] };
                     return s;
                 });
-                
                 setSantriList(updatedList);
                 setActiveSantri(updatedList.find(s => s.id === santri.id));
-                bukaModalWa(santri, text);
+                bukaModalWa(santri, txt);
             };
 
-            const laporMurojaah = (santri) => {
+            const laporTakrir = (santri, takrirAwal, takrirAkhir) => {
+                const txt = formatWaMsg(t.waTakrir, { nama: santri.nama, awal: takrirAwal, akhir: takrirAkhir });
+                bukaModalWa(santri, txt);
+            };
+
+            const laporMurojaah = (santri, isKhatam) => {
                 const juzSelesai = hitungJuzSekarang(santri.currentPage);
-                let beban = "Setengah (0.5) Juz";
-                if (juzSelesai >= 5 && juzSelesai < 10) beban = "1 Juz Penuh";
-                else if (juzSelesai >= 10 && juzSelesai < 20) beban = "2 Juz Penuh";
-                else if (juzSelesai >= 20) beban = "3 Juz Penuh";
+                let beban = t.beban05;
+                let targetText = `${t.juz} ${santri.currentMurojaahJuz}`;
+                let nextJuzState = santri.currentMurojaahJuz;
 
-                const targetJuz = santri.currentMurojaahJuz;
-                const text = `*LAPORAN MUROJAAH BERURUTAN*\n\n👤 Santri: ${santri.nama}\n📚 Porsi Wajib: ${beban}\n🎯 Disetor hari ini: Juz ${targetJuz}\n\n_Alhamdulillah murojaah harian selesai._`;
-                
+                if (isKhatam) {
+                    beban = t.bebanHayat;
+                    let j1 = santri.currentMurojaahJuz;
+                    let j2 = (j1 + 1) > 30 ? (j1 + 1 - 30) : (j1 + 1);
+                    let j3 = (j1 + 2) > 30 ? (j1 + 2 - 30) : (j1 + 2);
+                    targetText = `${t.juz} ${j1}, ${j2}, ${t.dan} ${j3}`;
+                    nextJuzState = (j1 + 3) > 30 ? (j1 + 3 - 30) : (j1 + 3);
+                } else {
+                    if (juzSelesai >= 5 && juzSelesai < 10) beban = t.beban1;
+                    else if (juzSelesai >= 10 && juzSelesai < 20) beban = t.beban2;
+                    else if (juzSelesai >= 20) beban = t.beban3;
+                    nextJuzState = santri.currentMurojaahJuz + 1;
+                    if (nextJuzState > juzSelesai) nextJuzState = 1; 
+                }
+
+                const txt = formatWaMsg(t.waMurojaah, { nama: santri.nama, beban: beban, target: targetText });
                 const updatedList = santriList.map(s => {
-                    if(s.id === santri.id) {
-                        let nextJuz = s.currentMurojaahJuz + 1;
-                        if (nextJuz > hitungJuzSekarang(s.currentPage)) nextJuz = 1; 
-                        return { ...s, currentMurojaahJuz: nextJuz };
-                    }
+                    if(s.id === santri.id) return { ...s, currentMurojaahJuz: nextJuzState };
                     return s;
                 });
                 setSantriList(updatedList);
                 setActiveSantri(updatedList.find(s => s.id === santri.id));
-                bukaModalWa(santri, text);
+                bukaModalWa(santri, txt);
             };
 
-            const selesaikanUjian = (santriId, ujianId) => {
-                const updatedList = santriList.map(s => {
-                    if(s.id === santriId) {
-                        return { ...s, ujianPending: s.ujianPending.filter(u => u.id !== ujianId) };
-                    }
-                    return s;
-                });
+            const laporRiyadhoh = (santri) => {
+                const nextDay = (santri.riyadhohDay || 0) + 1;
+                const txt = formatWaMsg(t.waRiyadhoh, { nama: santri.nama, day: nextDay });
+                const updatedList = santriList.map(s => { if(s.id === santri.id) return { ...s, riyadhohDay: nextDay }; return s; });
                 setSantriList(updatedList);
-                setActiveSantri(updatedList.find(s => s.id === santriId));
+                setActiveSantri(updatedList.find(s => s.id === santri.id));
+                bukaModalWa(santri, txt);
             };
 
+            const laporTasmi = (santri) => {
+                const nextCount = (santri.tasmiCount || 0) + 1;
+                const txt = formatWaMsg(t.waTasmi, { nama: santri.nama, count: nextCount });
+                const updatedList = santriList.map(s => { if(s.id === santri.id) return { ...s, tasmiCount: nextCount }; return s; });
+                setSantriList(updatedList);
+                setActiveSantri(updatedList.find(s => s.id === santri.id));
+                bukaModalWa(santri, txt);
+            };
 
-            // --- KOMPONEN PANEL DETAIL SANTRI ---
+            const Header = () => (
+                <div className="flex justify-between items-center mb-8">
+                    <div className="flex items-center space-x-2 space-x-reverse">
+                        <div className="bg-emerald-600 p-2 rounded-lg shadow-sm">
+                            <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                            </svg>
+                        </div>
+                        <h1 className={`text-2xl md:text-3xl font-extrabold text-emerald-800 tracking-tight ${isRtl ? 'mr-3' : 'ml-3'}`}>Mutqin<span className="text-emerald-500">Tracker</span></h1>
+                    </div>
+                    <button onClick={() => setLang(lang === 'id' ? 'ar' : 'id')} className="bg-white border-2 border-emerald-500 text-emerald-700 font-bold px-3 py-1 rounded-lg hover:bg-emerald-50">
+                        {lang === 'id' ? 'العربية' : 'Indonesia'}
+                    </button>
+                </div>
+            );
+
             const SantriDetail = ({ santri }) => {
+                const isKhatam = santri.currentPage >= MAX_PAGES;
                 const juzSelesai = hitungJuzSekarang(santri.currentPage);
                 
-                // Form State Ziyadah
-                const [inputAwal, setInputAwal] = useState(santri.currentPage + 1);
-                const [inputAkhir, setInputAkhir] = useState(santri.currentPage + santri.targetHarian);
+                const targetAwalZiyadah = santri.currentPage >= MAX_PAGES ? MAX_PAGES : santri.currentPage + 1;
+                const targetAkhirZiyadah = Math.min(MAX_PAGES, santri.currentPage + santri.targetHarian);
+                const [inputAwal, setInputAwal] = useState(targetAwalZiyadah);
+                const [inputAkhir, setInputAkhir] = useState(targetAkhirZiyadah);
 
-                const handleZiyadahSubmit = (e) => {
-                    e.preventDefault();
-                    if(inputAkhir < inputAwal) return alert("Halaman akhir tidak boleh kurang dari halaman awal!");
-                    laporZiyadah(santri, parseInt(inputAwal), parseInt(inputAkhir));
-                };
+                const baseTakrir = santri.lastZiyadahAwal || (santri.currentPage > 0 ? santri.currentPage : 1);
+                const takrirAwal = Math.max(1, baseTakrir - 5);
+                const takrirAkhir = santri.currentPage;
+
+                let m1 = santri.currentMurojaahJuz;
+                let m2 = (m1 + 1) > 30 ? (m1 + 1 - 30) : (m1 + 1);
+                let m3 = (m1 + 2) > 30 ? (m1 + 2 - 30) : (m1 + 2);
 
                 return (
                     <div className="bg-white p-6 md:p-8 rounded-2xl shadow-xl w-full max-w-2xl border-t-8 border-emerald-600">
-                        <button onClick={() => setView('home')} className="text-emerald-600 mb-6 font-bold flex items-center">← Kembali ke Dashboard</button>
+                        <button onClick={() => setView('home')} className="text-emerald-600 mb-6 font-bold flex items-center">{t.kembali}</button>
                         
-                        <div className="bg-emerald-50 rounded-xl p-5 mb-6 border border-emerald-100">
-                            <h2 className="text-2xl font-bold text-gray-800">{santri.nama}</h2>
-                            <p className="text-emerald-700 font-medium">Capaian Saat Ini: {juzSelesai} Juz Penuh (Selesai Hal {santri.currentPage})</p>
+                        <div className={`rounded-xl p-5 mb-6 border flex justify-between items-center ${isKhatam ? 'bg-yellow-50 border-yellow-200' : 'bg-emerald-50 border-emerald-100'}`}>
+                            <div>
+                                <h2 className="text-2xl font-bold text-gray-800">{santri.nama}</h2>
+                                <p className="text-emerald-700 font-medium">{t.capaian}: {juzSelesai} {t.juzPenuh} ({t.hal} {santri.currentPage}/{MAX_PAGES})</p>
+                            </div>
+                            {isKhatam && <div className="bg-yellow-400 text-yellow-900 font-bold px-3 py-1 rounded text-sm shadow-sm">{t.khatam}</div>}
                         </div>
 
-                        {/* SECTION 1: IKATAN / UJIAN (Hanya tampil jika ada ujian) */}
-                        {santri.ujianPending.length > 0 && (
-                            <div className="mb-6 bg-red-50 border-2 border-red-200 rounded-xl p-5">
-                                <h3 className="font-bold text-red-800 mb-3 flex items-center gap-2">⚠️ Tanggungan Ujian Ikatan Juz</h3>
-                                <div className="space-y-2">
-                                    {santri.ujianPending.map(u => (
-                                        <div key={u.id} className="flex justify-between items-center bg-white p-3 rounded shadow-sm border border-red-100">
-                                            <div>
-                                                <p className="font-bold text-gray-800">{u.title} <span className="text-xs font-normal bg-red-100 text-red-600 px-2 py-0.5 rounded ml-1">{u.type}</span></p>
-                                                <p className="text-xs text-red-600">Maks. Selesai: {formatDate(u.deadline)}</p>
-                                            </div>
-                                            <button onClick={() => selesaikanUjian(santri.id, u.id)} className="bg-red-500 hover:bg-red-600 text-white text-xs font-bold px-3 py-2 rounded">
-                                                Tandai Lulus ✓
-                                            </button>
+                        {isKhatam ? (
+                            <div className="space-y-5 animate-fade-in">
+                                <h3 className="font-bold text-gray-800 text-lg mb-2 text-center border-b pb-2">{t.faseKhatam}</h3>
+                                
+                                <div className="bg-white border-2 border-indigo-100 rounded-xl p-5 shadow-sm">
+                                    <span className="bg-indigo-100 text-indigo-800 text-xs px-2 py-1 rounded font-bold mb-3 inline-block">{t.riyadhohTitle}</span>
+                                    <p className="text-gray-600 text-sm mb-3">{t.riyadhohDesc}</p>
+                                    <div className="w-full bg-gray-200 rounded-full h-4 mb-4" dir="ltr">
+                                        <div className="bg-indigo-600 h-4 rounded-full" style={{width: `${((santri.riyadhohDay || 0)/40)*100}%`}}></div>
+                                    </div>
+                                    <p className="font-bold text-indigo-800 mb-4 text-center">{t.hariKe}{(santri.riyadhohDay || 0)} / 40</p>
+                                    <button onClick={() => laporRiyadhoh(santri)} disabled={(santri.riyadhohDay || 0) >= 40} className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-400 text-white py-3 rounded-lg font-bold shadow">{t.laporRiyadhoh}</button>
+                                </div>
+
+                                <div className="bg-white border-2 border-rose-100 rounded-xl p-5 shadow-sm">
+                                    <span className="bg-rose-100 text-rose-800 text-xs px-2 py-1 rounded font-bold mb-3 inline-block">{t.tasmiTitle}</span>
+                                    <p className="text-gray-600 text-sm mb-3">{t.tasmiDesc}</p>
+                                    <p className="font-bold text-rose-800 mb-4 text-center">{t.putaranLulus} {(santri.tasmiCount || 0)} / 3</p>
+                                    <button onClick={() => laporTasmi(santri)} disabled={(santri.tasmiCount || 0) >= 3} className="w-full bg-rose-600 hover:bg-rose-700 disabled:bg-gray-400 text-white py-3 rounded-lg font-bold shadow">{t.laporTasmi}</button>
+                                </div>
+
+                                <div className="bg-white border-2 border-purple-200 rounded-xl p-5 shadow-sm">
+                                    <span className="bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded font-bold mb-3 inline-block">{t.murojaahHayatTitle}</span>
+                                    <p className="text-gray-600 text-sm mb-3">{t.murojaahHayatDesc}</p>
+                                    <div className="bg-purple-50 p-4 rounded text-center mb-4 border border-purple-100">
+                                        <p className="text-xs text-purple-600 font-bold uppercase tracking-wider mb-1">{t.targetDisetor}</p>
+                                        <p className="font-bold text-purple-800 text-2xl" dir="ltr">{t.juz} {m1}, {m2}, {t.dan} {m3}</p>
+                                    </div>
+                                    <button onClick={() => laporMurojaah(santri, true)} className="w-full bg-purple-600 hover:bg-purple-700 text-white py-3 rounded-lg font-bold shadow">{t.laporMurojaahHayat}</button>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="space-y-5">
+                                {santri.ujianPending.length > 0 && (
+                                    <div className="bg-red-50 border-2 border-red-200 rounded-xl p-5">
+                                        <h3 className="font-bold text-red-800 mb-3">{t.ujianIkatan}</h3>
+                                        <div className="space-y-2">
+                                            {santri.ujianPending.map(u => (
+                                                <div key={u.id} className="flex justify-between items-center bg-white p-3 rounded shadow-sm border border-red-100">
+                                                    <div>
+                                                        <p className="font-bold text-gray-800" dir="ltr">{u.title}</p>
+                                                        <p className="text-xs text-red-600">{t.maks}: {formatDate(u.deadline)}</p>
+                                                    </div>
+                                                    <button onClick={() => {
+                                                        const s = [...santriList];
+                                                        const idx = s.findIndex(x => x.id === santri.id);
+                                                        s[idx].ujianPending = s[idx].ujianPending.filter(x => x.id !== u.id);
+                                                        setSantriList(s); setActiveSantri(s[idx]);
+                                                    }} className="bg-red-500 hover:bg-red-600 text-white text-xs font-bold px-3 py-2 rounded">{t.lulus}</button>
+                                                </div>
+                                            ))}
                                         </div>
-                                    ))}
+                                    </div>
+                                )}
+
+                                <div className="bg-white border-2 border-blue-100 rounded-xl p-5 shadow-sm">
+                                    <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded font-bold mb-3 inline-block">{t.ziyadahTitle}</span>
+                                    <form onSubmit={(e) => { e.preventDefault(); laporZiyadah(santri, parseInt(inputAwal), parseInt(inputAkhir)); }} className="flex flex-col gap-4">
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div>
+                                                <label className="text-xs font-bold text-gray-600">{t.halAwal}</label>
+                                                <input type="number" value={inputAwal} onChange={(e)=>setInputAwal(e.target.value)} required min="1" max={MAX_PAGES} className="w-full border rounded p-2 bg-gray-50 font-bold" />
+                                            </div>
+                                            <div>
+                                                <label className="text-xs font-bold text-gray-600">{t.halAkhir} ({t.maks} {MAX_PAGES})</label>
+                                                <input type="number" value={inputAkhir} onChange={(e)=>setInputAkhir(e.target.value)} required min={inputAwal} max={MAX_PAGES} className="w-full border border-blue-300 rounded p-2 bg-blue-50 font-bold text-blue-800" />
+                                            </div>
+                                        </div>
+                                        <button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2.5 rounded-lg font-bold text-sm shadow">{t.simpanZiyadah}</button>
+                                    </form>
+                                </div>
+
+                                <div className="bg-white border-2 border-amber-100 rounded-xl p-5 shadow-sm">
+                                    <span className="bg-amber-100 text-amber-800 text-xs px-2 py-1 rounded font-bold mb-2 inline-block">{t.takrirTitle}</span>
+                                    <p className="text-gray-600 text-xs mb-3">{t.takrirDesc} ({t.hal} {santri.lastZiyadahAwal} - {santri.currentPage})</p>
+                                    <div className="bg-amber-50 border border-amber-200 p-3 rounded text-center mb-3">
+                                        <p className="font-bold text-amber-800 text-lg" dir="ltr">{t.hal} {takrirAwal} - {takrirAkhir}</p>
+                                    </div>
+                                    <button onClick={() => laporTakrir(santri, takrirAwal, takrirAkhir)} disabled={santri.currentPage === 0} className="w-full bg-amber-500 hover:bg-amber-600 text-white py-2.5 rounded-lg font-bold text-sm shadow disabled:bg-gray-300">{t.laporTakrir}</button>
+                                </div>
+
+                                <div className="bg-white border-2 border-purple-100 rounded-xl p-5 shadow-sm flex justify-between items-center gap-4">
+                                    <div>
+                                        <span className="bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded font-bold inline-block mb-1">{t.murojaahTitle}</span>
+                                        <p className="font-bold text-purple-800 text-lg">{t.juz} {juzSelesai === 0 ? `1 (${t.batasHafalan})` : santri.currentMurojaahJuz}</p>
+                                    </div>
+                                    <button onClick={() => laporMurojaah(santri, false)} className="whitespace-nowrap bg-purple-600 hover:bg-purple-700 text-white px-5 py-3 rounded-lg font-bold text-sm shadow">{t.lapor}</button>
                                 </div>
                             </div>
                         )}
-
-                        <div className="space-y-5">
-                            {/* SECTION 2: ZIYADAH & TAKRIR */}
-                            <div className="bg-white border-2 border-blue-100 rounded-xl p-5 shadow-sm">
-                                <div className="flex items-center gap-2 mb-3">
-                                    <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded font-bold">1. SETORAN ZIYADAH & TAKRIR</span>
-                                </div>
-                                <form onSubmit={handleZiyadahSubmit} className="flex flex-col gap-4">
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div>
-                                            <label className="text-xs font-bold text-gray-600">Mulai Halaman</label>
-                                            <input type="number" value={inputAwal} onChange={(e)=>setInputAwal(e.target.value)} required className="w-full border rounded p-2 bg-gray-50 font-bold" />
-                                        </div>
-                                        <div>
-                                            <label className="text-xs font-bold text-gray-600">Sampai Halaman</label>
-                                            <input type="number" value={inputAkhir} onChange={(e)=>setInputAkhir(e.target.value)} required min={inputAwal} className="w-full border border-blue-300 focus:ring-blue-500 rounded p-2 bg-blue-50 font-bold text-blue-800" />
-                                        </div>
-                                    </div>
-                                    <div className="bg-gray-50 p-3 rounded border text-sm text-gray-600">
-                                        💡 <b>Target Takrir Otomatis:</b> Hal {Math.max(1, inputAwal - 5)} s/d {inputAkhir}
-                                    </div>
-                                    <button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2.5 rounded-lg font-bold text-sm shadow transition-colors">
-                                        Simpan Progres & Buka Laporan WA
-                                    </button>
-                                </form>
-                            </div>
-
-                            {/* SECTION 3: MUROJAAH LAMA */}
-                            <div className="bg-white border-2 border-purple-100 rounded-xl p-5 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                                <div>
-                                    <div className="flex items-center gap-2 mb-1">
-                                        <span className="bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded font-bold">2. MUROJAAH BERURUTAN</span>
-                                    </div>
-                                    <p className="text-gray-600 text-sm mt-2">Target Murojaah Hari Ini:</p>
-                                    <p className="font-bold text-purple-800 text-lg">Juz {juzSelesai === 0 ? "1 (Batas Hafalan)" : santri.currentMurojaahJuz}</p>
-                                </div>
-                                <button onClick={() => laporMurojaah(santri)} className="w-full md:w-auto bg-purple-600 hover:bg-purple-700 text-white px-5 py-3 rounded-lg font-bold text-sm shadow transition-colors">
-                                    Lapor Murojaah ➔
-                                </button>
-                            </div>
-                        </div>
                     </div>
                 );
             };
 
             return (
-                <div className="min-h-screen p-4 md:p-8 max-w-4xl mx-auto pb-24">
-                    <AppLogo />
+                <div dir={isRtl ? 'rtl' : 'ltr'} className={`min-h-screen p-4 md:p-8 max-w-4xl mx-auto pb-24 ${isRtl ? 'text-right' : 'text-left'}`}>
+                    <Header />
 
                     {view === 'register' && (
                         <div className="bg-white p-8 rounded-2xl shadow-xl border-t-8 border-emerald-500 max-w-lg mx-auto">
-                            <button onClick={() => setView('home')} className="text-emerald-600 mb-4 font-bold flex items-center">← Kembali</button>
-                            <h2 className="text-2xl font-bold text-gray-800 mb-6">Registrasi Santri Baru</h2>
+                            <button onClick={() => setView('home')} className="text-emerald-600 mb-4 font-bold flex items-center">{t.kembali}</button>
+                            <h2 className="text-2xl font-bold text-gray-800 mb-6">{t.regSantri}</h2>
                             <form onSubmit={handleRegister} className="space-y-4">
-                                <div><label className="block text-sm font-semibold">Nama Lengkap</label><input type="text" name="nama" required className="w-full border rounded-lg p-2 bg-gray-50" /></div>
+                                <div><label className="block text-sm font-semibold mb-1">{t.namaLengkap}</label><input type="text" name="nama" required className="w-full border rounded-lg p-2 bg-gray-50" /></div>
                                 
-                                <div><label className="block text-sm font-semibold">Kode Negara WA</label>
-                                    <select name="kodeNegara" className="w-full border rounded-lg p-2 bg-gray-50">
-                                        <option value="62">🇮🇩 Indonesia (+62)</option><option value="967">🇾🇪 Yaman (+967)</option>
-                                    </select>
+                                <div className="border p-3 rounded-lg bg-gray-50 space-y-3">
+                                    <p className="font-bold text-sm text-gray-600 border-b pb-1">{t.kontakPenyimak}</p>
+                                    <div className="flex gap-2">
+                                        <select name="kodeNegaraPenyimak" className="border rounded-lg p-2 w-1/3 bg-white" dir="ltr">
+                                            {countryCodes.map(c => <option key={c.code} value={c.code}>{c.label}</option>)}
+                                        </select>
+                                        <input type="tel" name="noWaPenyimak" placeholder="812..." className="w-2/3 border rounded-lg p-2 bg-white" dir="ltr" />
+                                    </div>
                                 </div>
-                                
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div><label className="block text-sm font-semibold">WA Penyimak</label><input type="tel" name="noWaPenyimak" placeholder="812..." required className="w-full border rounded-lg p-2 bg-gray-50" /></div>
-                                    <div><label className="block text-sm font-semibold">WA Santri</label><input type="tel" name="noWaSantri" placeholder="813..." required className="w-full border rounded-lg p-2 bg-gray-50" /></div>
+
+                                <div className="border p-3 rounded-lg bg-gray-50 space-y-3">
+                                    <p className="font-bold text-sm text-gray-600 border-b pb-1">{t.kontakSantri}</p>
+                                    <div className="flex gap-2">
+                                        <select name="kodeNegaraSantri" className="border rounded-lg p-2 w-1/3 bg-white" dir="ltr">
+                                            {countryCodes.map(c => <option key={c.code} value={c.code}>{c.label}</option>)}
+                                        </select>
+                                        <input type="tel" name="noWaSantri" placeholder="813..." className="w-2/3 border rounded-lg p-2 bg-white" dir="ltr" />
+                                    </div>
                                 </div>
 
                                 <div className="grid grid-cols-2 gap-4">
-                                    <div><label className="block text-sm font-semibold">Hafalan Awal (Juz)</label><input type="number" name="hafalanAwalJuz" min="0" max="30" defaultValue="0" className="w-full border rounded-lg p-2 bg-gray-50" /></div>
-                                    <div><label className="block text-sm font-semibold">Target (Hal/Hari)</label><input type="number" name="targetHarian" min="1" defaultValue="1" className="w-full border rounded-lg p-2 bg-gray-50" /></div>
+                                    <div><label className="block text-sm font-semibold mb-1">{t.hafalanAwal}</label><input type="number" name="hafalanAwalJuz" min="0" max="30" defaultValue="0" className="w-full border rounded-lg p-2 bg-gray-50" /></div>
+                                    <div><label className="block text-sm font-semibold mb-1">{t.targetHarian}</label><input type="number" name="targetHarian" min="1" defaultValue="1" className="w-full border rounded-lg p-2 bg-gray-50" /></div>
                                 </div>
-                                <button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-lg mt-4 shadow-md">Simpan Santri</button>
+                                <button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-lg mt-4 shadow-md">{t.simpanSantri}</button>
                             </form>
                         </div>
                     )}
@@ -284,19 +444,23 @@
                     {view === 'home' && (
                         <div>
                             <div className="flex justify-between items-end mb-6">
-                                <div><h2 className="text-2xl font-bold text-gray-800">Daftar Santri</h2></div>
-                                <button onClick={() => setView('register')} className="bg-emerald-600 text-white px-4 py-2 rounded-lg font-bold shadow-md">+ Tambah Santri</button>
+                                <div><h2 className="text-2xl font-bold text-gray-800">{t.daftarSantri}</h2></div>
+                                <button onClick={() => setView('register')} className="bg-emerald-600 text-white px-4 py-2 rounded-lg font-bold shadow-md">{t.addSantri}</button>
                             </div>
                             {santriList.length === 0 ? (
-                                <div className="bg-white rounded-xl p-10 text-center shadow border text-gray-500">Belum ada data. Silakan tambah santri.</div>
+                                <div className="bg-white rounded-xl p-10 text-center shadow border text-gray-500">{t.noData}</div>
                             ) : (
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     {santriList.map((santri) => (
                                         <div key={santri.id} className="bg-white rounded-xl p-5 shadow-sm border border-emerald-100 relative">
-                                            {santri.ujianPending.length > 0 && <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full animate-pulse">{santri.ujianPending.length} Ujian</span>}
+                                            {santri.ujianPending && santri.ujianPending.length > 0 && <span className={`absolute -top-2 ${isRtl ? '-left-2' : '-right-2'} bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full animate-pulse`}>{santri.ujianPending.length}</span>}
                                             <h3 className="font-bold text-lg text-gray-800">{santri.nama}</h3>
-                                            <p className="text-sm text-emerald-600 font-semibold mb-4">Selesai: {hitungJuzSekarang(santri.currentPage)} Juz</p>
-                                            <button onClick={() => { setActiveSantri(santri); setView('detail'); }} className="w-full bg-emerald-50 text-emerald-700 border border-emerald-200 py-2 rounded-lg font-bold text-sm">Buka Panel Setoran ➔</button>
+                                            <p className="text-sm text-emerald-600 font-semibold mb-4">
+                                                {santri.currentPage >= MAX_PAGES ? t.khatam : `${t.selesai} ${hitungJuzSekarang(santri.currentPage)} ${t.juz}`}
+                                            </p>
+                                            <button onClick={() => { setActiveSantri(santri); setView('detail'); }} className={`w-full text-emerald-700 border border-emerald-200 py-2 rounded-lg font-bold text-sm ${santri.currentPage >= MAX_PAGES ? 'bg-yellow-100' : 'bg-emerald-50'}`}>
+                                                {santri.currentPage >= MAX_PAGES ? t.bukaPanelKhatam : t.bukaPanelSetoran}
+                                            </button>
                                         </div>
                                     ))}
                                 </div>
@@ -304,25 +468,23 @@
                         </div>
                     )}
 
-                    {/* MODAL POPUP WA CERDAS */}
+                    {/* MODAL POPUP WA */}
                     {waModal.isOpen && (
                         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
                             <div className="bg-white rounded-xl p-6 w-full max-w-sm shadow-2xl">
-                                <h3 className="font-bold text-xl mb-2">Laporan Disimpan! 🎉</h3>
-                                <p className="text-gray-600 text-sm mb-6">Pilih tujuan pengiriman laporan ke WhatsApp:</p>
+                                <h3 className="font-bold text-xl mb-2">{t.pilihTujuanWa}</h3>
+                                <p className="text-gray-600 text-sm mb-6">{t.pilihTujuanDesc}</p>
                                 
                                 <div className="space-y-3">
-                                    <button onClick={() => window.open(`https://wa.me/${waModal.penyimakWa}?text=${waModal.text}`, '_blank')} className="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-4 rounded-lg flex justify-between items-center">
-                                        <span>Kirim ke Penyimak</span> <span>➔</span>
+                                    <button disabled={!waModal.penyimakWa} onClick={() => window.open(`https://wa.me/${waModal.penyimakWa}?text=${waModal.text}`, '_blank')} className={`w-full font-bold py-3 px-4 rounded-lg flex justify-between items-center ${waModal.penyimakWa ? 'bg-green-500 hover:bg-green-600 text-white' : 'bg-gray-200 text-gray-500 cursor-not-allowed'}`}>
+                                        <span>{t.penyimak}</span> <span>{waModal.penyimakWa ? '➔' : t.belumAdaWa}</span>
                                     </button>
-                                    <button onClick={() => window.open(`https://wa.me/${waModal.santriWa}?text=${waModal.text}`, '_blank')} className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg flex justify-between items-center">
-                                        <span>Kirim ke Santri</span> <span>➔</span>
+                                    <button disabled={!waModal.santriWa} onClick={() => window.open(`https://wa.me/${waModal.santriWa}?text=${waModal.text}`, '_blank')} className={`w-full font-bold py-3 px-4 rounded-lg flex justify-between items-center ${waModal.santriWa ? 'bg-green-600 hover:bg-green-700 text-white' : 'bg-gray-200 text-gray-500 cursor-not-allowed'}`}>
+                                        <span>{t.santri}</span> <span>{waModal.santriWa ? '➔' : t.belumAdaWa}</span>
                                     </button>
                                 </div>
                                 
-                                <button onClick={() => setWaModal({ isOpen: false, text: '', penyimakWa: '', santriWa: '' })} className="mt-4 w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-2 rounded-lg">
-                                    Tutup
-                                </button>
+                                <button onClick={() => setWaModal({ isOpen: false, text: '', penyimakWa: '', santriWa: '' })} className="mt-4 w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-2 rounded-lg">{t.tutup}</button>
                             </div>
                         </div>
                     )}
