@@ -3,135 +3,293 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mutqin Tracker</title>
-    <!-- Memuat Tailwind CSS untuk Desain -->
+    <title>Mutqin Tracker Pro</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Memuat Mesin React -->
+    <!-- React & Babel -->
     <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0fdf4; }
+    </style>
 </head>
-<body class="bg-gray-50">
+<body>
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState } = React;
+        const { useState, useEffect } = React;
+
+        // --- KOMPONEN LOGO ---
+        const AppLogo = () => (
+            <div className="flex items-center justify-center space-x-2 mb-6">
+                <svg className="w-10 h-10 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                </svg>
+                <h1 className="text-3xl font-extrabold text-emerald-800 tracking-tight">Mutqin<span className="text-emerald-500">Tracker</span></h1>
+            </div>
+        );
 
         function App() {
-            const [logHarian, setLogHarian] = useState({
-                namaSantri: '', emailPenyimak: '', noWaPenyimak: '',
-                totalHafalan: '', ziyadah: '', takrirSelesai: false,
-                murojaah: '', jadwalBerikutnya: ''
-            });
-            const [isSaved, setIsSaved] = useState(false);
+            // STATE MANAGEMENT
+            const [santriList, setSantriList] = useState([]);
+            const [view, setView] = useState('home'); // home, register, detail
+            const [activeSantri, setActiveSantri] = useState(null);
 
-            const handleChange = (e) => {
-                const { name, value, type, checked } = e.target;
-                setLogHarian(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
-            };
+            // Load data dari LocalStorage saat pertama kali dibuka
+            useEffect(() => {
+                const savedData = localStorage.getItem('mutqinData');
+                if (savedData) setSantriList(JSON.parse(savedData));
+            }, []);
 
-            const handleSimpan = (e) => {
+            // Simpan otomatis ke LocalStorage tiap ada perubahan data
+            useEffect(() => {
+                localStorage.setItem('mutqinData', JSON.stringify(santriList));
+            }, [santriList]);
+
+            // --- FUNGSI REGISTRASI SANTRI ---
+            const handleRegister = (e) => {
                 e.preventDefault();
-                setIsSaved(true);
+                const formData = new FormData(e.target);
+                const hafalanAwalJuz = parseInt(formData.get('hafalanAwalJuz'));
+                const targetHarian = parseInt(formData.get('targetHarian'));
+                
+                const newSantri = {
+                    id: Date.now(),
+                    nama: formData.get('nama'),
+                    kodeNegara: formData.get('kodeNegara'),
+                    noWa: formData.get('noWa').replace(/^0+/, ''), // Hapus 0 di depan
+                    tanggalDaftar: new Date().toISOString(),
+                    targetHarian: targetHarian,
+                    // Konversi sistem: 1 Juz = 20 Halaman. Total 604 Halaman.
+                    currentPage: hafalanAwalJuz * 20,
+                    currentMurojaahJuz: 1 // Start murojaah dari juz 1
+                };
+
+                setSantriList([...santriList, newSantri]);
+                setView('home');
             };
 
-            const buatLinkGoogleCalendar = () => {
-                const baseUrl = "https://calendar.google.com/calendar/render?action=TEMPLATE";
-                const title = encodeURIComponent(`Setoran Hafalan: ${logHarian.namaSantri}`);
-                const details = encodeURIComponent(`Target Murojaah & Ziyadah.\nSiapkan Takrir 5 halaman terakhir.`);
-                const dateStr = logHarian.jadwalBerikutnya.replace(/[-:]/g, '').replace('T', 'T') + '00Z'; 
-                window.open(`${baseUrl}&text=${title}&details=${details}&dates=${dateStr}/${dateStr}&add=${logHarian.emailPenyimak}`, '_blank');
+            // --- FUNGSI KALKULASI PINTAR ---
+            const hitungProyeksi = (santri) => {
+                const sisaHalaman = 604 - santri.currentPage;
+                if (sisaHalaman <= 0) return "Sudah Khatam 30 Juz!";
+                const sisaHari = Math.ceil(sisaHalaman / santri.targetHarian);
+                const tglKhatam = new Date();
+                tglKhatam.setDate(tglKhatam.getDate() + sisaHari);
+                return tglKhatam.toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' });
             };
 
-            const kirimEmail = () => {
-                const subject = encodeURIComponent(`Laporan Hafalan: ${logHarian.namaSantri}`);
-                const body = encodeURIComponent(`Assalamu'alaikum,\n\nBerikut laporan setoran hari ini:\n- Nama: ${logHarian.namaSantri}\n- Ziyadah: ${logHarian.ziyadah}\n- Murojaah: ${logHarian.murojaah}\n- Takrir 5 Halaman: ${logHarian.takrirSelesai ? 'Selesai' : 'Belum'}\n\nJazakumullah khairan.`);
-                window.open(`mailto:${logHarian.emailPenyimak}?subject=${subject}&body=${body}`, '_blank');
+            const hitungJuzSekarang = (page) => Math.floor(page / 20);
+            
+            const hitungBebanMurojaah = (juz) => {
+                if (juz < 5) return "Setengah (0.5) Juz";
+                if (juz >= 5 && juz < 10) return "1 Juz Penuh";
+                if (juz >= 10 && juz < 20) return "2 Juz Penuh";
+                return "3 Juz Penuh";
             };
 
-            const kirimWhatsApp = () => {
-                const text = encodeURIComponent(`*Laporan Setoran Hafalan*\n\n👤 Nama: ${logHarian.namaSantri}\n📖 Ziyadah: ${logHarian.ziyadah}\n🔄 Murojaah: ${logHarian.murojaah}\n✅ Takrir 5 Hal: ${logHarian.takrirSelesai ? 'Sudah disetor' : 'Belum'}\n\nMohon siapkan waktu untuk jadwal berikutnya. Terima kasih.`);
-                let phone = logHarian.noWaPenyimak;
-                if (phone.startsWith('0')) phone = '62' + phone.substring(1);
-                window.open(`https://wa.me/${phone}?text=${text}`, '_blank');
+            // --- FUNGSI LAPORAN TERPISAH (AUTO-GENERATE WA) ---
+            const laporZiyadah = (santri) => {
+                const targetHal = `${santri.currentPage + 1} s/d ${santri.currentPage + santri.targetHarian}`;
+                const text = encodeURIComponent(`*LAPORAN ZIYADAH (Baru)*\n\n👤 Santri: ${santri.nama}\n📖 Halaman yang disetor: ${targetHal}\n📊 Posisi Hafalan: ${hitungJuzSekarang(santri.currentPage + santri.targetHarian)} Juz\n\n_Sistem: Ziyadah Selesai._`);
+                
+                // Update progres halaman santri di database lokal
+                const updatedList = santriList.map(s => {
+                    if(s.id === santri.id) return { ...s, currentPage: s.currentPage + s.targetHarian };
+                    return s;
+                });
+                setSantriList(updatedList);
+                setActiveSantri(updatedList.find(s => s.id === santri.id)); // Refresh tampilan detail
+                
+                window.open(`https://wa.me/${santri.kodeNegara}${santri.noWa}?text=${text}`, '_blank');
             };
 
-            return (
-                <div className="min-h-screen p-6 font-sans">
-                    <div className="max-w-2xl mx-auto bg-white p-8 rounded-xl shadow-md border-t-4 border-emerald-600">
-                        <h1 className="text-2xl font-bold text-emerald-700 mb-2 text-center">Mutqin Tracker</h1>
-                        <p className="text-center text-gray-500 mb-8 text-sm">Aplikasi Pencatatan Hafalan & Notifikasi Otomatis</p>
+            const laporTakrir = (santri) => {
+                const batasBawah = Math.max(1, santri.currentPage - 4);
+                const text = encodeURIComponent(`*LAPORAN TAKRIR*\n\n👤 Santri: ${santri.nama}\n🔄 Mengulang 5 Halaman Terakhir: Hal ${batasBawah} s/d ${santri.currentPage}\n\n_Sistem: Takrir Selesai._`);
+                window.open(`https://wa.me/${santri.kodeNegara}${santri.noWa}?text=${text}`, '_blank');
+            };
 
-                        {!isSaved ? (
-                            <form onSubmit={handleSimpan} className="space-y-4">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">Nama Santri</label>
-                                        <input type="text" name="namaSantri" required onChange={handleChange} className="w-full border rounded-md p-2 bg-gray-50 focus:ring-emerald-500" />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">Total Hafalan (Juz)</label>
-                                        <input type="number" name="totalHafalan" required onChange={handleChange} className="w-full border rounded-md p-2 bg-gray-50" />
-                                    </div>
-                                </div>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">Email Penyimak (Musyrif)</label>
-                                        <input type="email" name="emailPenyimak" placeholder="ustadz@gmail.com" onChange={handleChange} className="w-full border rounded-md p-2 bg-gray-50" />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">No. WA Penyimak</label>
-                                        <input type="tel" name="noWaPenyimak" placeholder="08123456789" onChange={handleChange} className="w-full border rounded-md p-2 bg-gray-50" />
-                                    </div>
-                                </div>
-                                <div className="pt-4 border-t border-gray-100">
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Ziyadah (Baru) & Halaman</label>
-                                    <input type="text" name="ziyadah" placeholder="Al-Baqarah 1-5 (1 Hal)" onChange={handleChange} className="w-full border rounded-md p-2 bg-gray-50" />
-                                </div>
+            const laporMurojaah = (santri) => {
+                const juzHafalan = hitungJuzSekarang(santri.currentPage);
+                const targetMurojaah = hitungBebanMurojaah(juzHafalan);
+                const text = encodeURIComponent(`*LAPORAN MUROJAAH LAMA*\n\n👤 Santri: ${santri.nama}\n📚 Porsi Disetor: ${targetMurojaah}\n🎯 Juz berjalan: ${santri.currentMurojaahJuz}\n\n_Sistem: Murojaah Selesai._`);
+                
+                // Rotasi siklus Juz Murojaah
+                const updatedList = santriList.map(s => {
+                    if(s.id === santri.id) {
+                        let nextJuz = s.currentMurojaahJuz + 1;
+                        if (nextJuz > hitungJuzSekarang(s.currentPage)) nextJuz = 1; // Reset ke awal jika lewat batas hafalan
+                        return { ...s, currentMurojaahJuz: nextJuz };
+                    }
+                    return s;
+                });
+                setSantriList(updatedList);
+                setActiveSantri(updatedList.find(s => s.id === santri.id));
+
+                window.open(`https://wa.me/${santri.kodeNegara}${santri.noWa}?text=${text}`, '_blank');
+            };
+
+
+            // --- TAMPILAN (VIEWS) ---
+            if (view === 'register') {
+                return (
+                    <div className="min-h-screen p-4 md:p-8 flex justify-center">
+                        <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-lg border-t-8 border-emerald-500">
+                            <button onClick={() => setView('home')} className="text-emerald-600 mb-4 font-bold flex items-center">
+                                ← Kembali
+                            </button>
+                            <h2 className="text-2xl font-bold text-gray-800 mb-6">Registrasi Santri Baru</h2>
+                            <form onSubmit={handleRegister} className="space-y-4">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Murojaah (Sesuai rasio hafalan)</label>
-                                    <input type="text" name="murojaah" placeholder="Juz 1" onChange={handleChange} className="w-full border rounded-md p-2 bg-gray-50" />
+                                    <label className="block text-sm font-semibold text-gray-700">Nama Lengkap</label>
+                                    <input type="text" name="nama" required className="mt-1 w-full border border-gray-300 rounded-lg p-3 bg-gray-50" />
                                 </div>
-                                <div className="flex items-center mt-4 p-3 bg-emerald-50 rounded-md border border-emerald-100">
-                                    <input type="checkbox" name="takrirSelesai" id="takrir" onChange={handleChange} className="w-5 h-5 accent-emerald-600 rounded" />
-                                    <label htmlFor="takrir" className="ml-3 text-sm text-emerald-800 font-medium">
-                                        Selesai Takrir 5 Halaman Terakhir
-                                    </label>
+                                
+                                <div>
+                                    <label className="block text-sm font-semibold text-gray-700">Nomor WhatsApp (Penyimak)</label>
+                                    <div className="flex mt-1">
+                                        <select name="kodeNegara" className="border border-gray-300 rounded-l-lg p-3 bg-gray-100 font-semibold focus:outline-none">
+                                            <option value="62">🇮🇩 +62</option>
+                                            <option value="967">🇾🇪 +967</option>
+                                            <option value="20">🇪🇬 +20</option>
+                                            <option value="966">🇸🇦 +966</option>
+                                        </select>
+                                        <input type="tel" name="noWa" placeholder="8123456789" required className="w-full border-t border-b border-r border-gray-300 rounded-r-lg p-3 bg-gray-50" />
+                                    </div>
                                 </div>
-                                <div className="pt-4 border-t border-gray-100">
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Jadwal Setoran Berikutnya</label>
-                                    <input type="datetime-local" name="jadwalBerikutnya" onChange={handleChange} className="w-full border rounded-md p-2 bg-gray-50" />
+
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-sm font-semibold text-gray-700">Hafalan Awal (Juz)</label>
+                                        <input type="number" name="hafalanAwalJuz" min="0" max="30" defaultValue="0" required className="mt-1 w-full border border-gray-300 rounded-lg p-3 bg-gray-50" />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-semibold text-gray-700">Target (Hal/Hari)</label>
+                                        <input type="number" name="targetHarian" min="1" defaultValue="1" required className="mt-1 w-full border border-gray-300 rounded-lg p-3 bg-gray-50" />
+                                    </div>
                                 </div>
-                                <button type="submit" className="w-full bg-emerald-600 text-white py-3 px-4 rounded-md font-bold hover:bg-emerald-700 transition-colors mt-6 shadow-sm">
-                                    Simpan Data & Buat Laporan
+
+                                <button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-4 rounded-lg mt-6 shadow-md transition-all">
+                                    Simpan & Generate Target
                                 </button>
                             </form>
-                        ) : (
-                            <div className="text-center py-6">
-                                <div className="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl font-bold">✓</div>
-                                <h2 className="text-2xl font-bold text-gray-800 mb-2">Alhamdulillah!</h2>
-                                <p className="text-gray-600 mb-8 text-sm">Pilih metode pengiriman laporan ke Musyrif.</p>
+                        </div>
+                    </div>
+                );
+            }
+
+            if (view === 'detail' && activeSantri) {
+                const juzSekarang = hitungJuzSekarang(activeSantri.currentPage);
+                return (
+                    <div className="min-h-screen p-4 md:p-8 flex justify-center">
+                        <div className="bg-white p-6 md:p-8 rounded-2xl shadow-xl w-full max-w-2xl border-t-8 border-emerald-600">
+                            <button onClick={() => setView('home')} className="text-emerald-600 mb-6 font-bold flex items-center">
+                                ← Kembali ke Dashboard
+                            </button>
+                            
+                            <div className="bg-emerald-50 rounded-xl p-5 mb-6 border border-emerald-100 flex justify-between items-center">
+                                <div>
+                                    <h2 className="text-2xl font-bold text-gray-800">{activeSantri.nama}</h2>
+                                    <p className="text-emerald-700 font-medium">Hafalan: {juzSekarang} Juz (Hal {activeSantri.currentPage})</p>
+                                </div>
+                                <div className="text-right">
+                                    <p className="text-xs text-gray-500 uppercase tracking-wider font-bold">Estimasi Khatam</p>
+                                    <p className="text-lg font-bold text-emerald-600">{hitungProyeksi(activeSantri)}</p>
+                                </div>
+                            </div>
+
+                            <h3 className="font-bold text-gray-800 text-lg mb-4">Setoran Hari Ini (Fitur Terpisah)</h3>
+                            <div className="space-y-4">
                                 
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                                    <button onClick={buatLinkGoogleCalendar} className="bg-blue-600 text-white p-3 rounded-md hover:bg-blue-700 flex flex-col items-center shadow-sm">
-                                        <span className="font-bold">Google Calendar</span>
-                                        <span className="text-xs font-normal mt-1 text-blue-100">Buat Alarm Jadwal</span>
-                                    </button>
-                                    <button onClick={kirimWhatsApp} className="bg-green-500 text-white p-3 rounded-md hover:bg-green-600 flex flex-col items-center shadow-sm">
-                                        <span className="font-bold">WhatsApp</span>
-                                        <span className="text-xs font-normal mt-1 text-green-100">Kirim Laporan Instan</span>
-                                    </button>
-                                    <button onClick={kirimEmail} className="bg-gray-700 text-white p-3 rounded-md hover:bg-gray-800 flex flex-col items-center shadow-sm">
-                                        <span className="font-bold">Email</span>
-                                        <span className="text-xs font-normal mt-1 text-gray-300">Kirim Rekap Formal</span>
+                                {/* 1. ZIYADAH */}
+                                <div className="bg-white border-2 border-blue-100 rounded-xl p-5 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                                    <div>
+                                        <div className="flex items-center gap-2 mb-1">
+                                            <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded font-bold">1. ZIYADAH BARU</span>
+                                        </div>
+                                        <p className="text-gray-600 text-sm">Target Halaman: <span className="font-bold text-gray-900">{activeSantri.currentPage + 1} s/d {activeSantri.currentPage + activeSantri.targetHarian}</span></p>
+                                    </div>
+                                    <button onClick={() => laporZiyadah(activeSantri)} className="w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg font-bold text-sm shadow transition-colors">
+                                        Laporkan Ziyadah (WA)
                                     </button>
                                 </div>
-                                <button onClick={() => setIsSaved(false)} className="mt-8 text-emerald-600 font-medium hover:underline">
-                                    + Input Santri Lain
-                                </button>
+
+                                {/* 2. TAKRIR */}
+                                <div className="bg-white border-2 border-amber-100 rounded-xl p-5 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                                    <div>
+                                        <div className="flex items-center gap-2 mb-1">
+                                            <span className="bg-amber-100 text-amber-800 text-xs px-2 py-1 rounded font-bold">2. TAKRIR</span>
+                                        </div>
+                                        <p className="text-gray-600 text-sm">5 Halaman Terakhir: <span className="font-bold text-gray-900">Hal {Math.max(1, activeSantri.currentPage - 4)} s/d {activeSantri.currentPage}</span></p>
+                                    </div>
+                                    <button onClick={() => laporTakrir(activeSantri)} className="w-full md:w-auto bg-amber-500 hover:bg-amber-600 text-white px-5 py-2.5 rounded-lg font-bold text-sm shadow transition-colors">
+                                        Laporkan Takrir (WA)
+                                    </button>
+                                </div>
+
+                                {/* 3. MUROJAAH */}
+                                <div className="bg-white border-2 border-purple-100 rounded-xl p-5 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                                    <div>
+                                        <div className="flex items-center gap-2 mb-1">
+                                            <span className="bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded font-bold">3. MUROJAAH LAMA</span>
+                                        </div>
+                                        <p className="text-gray-600 text-sm">Porsi Wajib: <span className="font-bold text-gray-900">{hitungBebanMurojaah(juzSekarang)}</span></p>
+                                        <p className="text-gray-500 text-xs">Juz Rekomendasi hari ini: Juz {activeSantri.currentMurojaahJuz}</p>
+                                    </div>
+                                    <button onClick={() => laporMurojaah(activeSantri)} className="w-full md:w-auto bg-purple-600 hover:bg-purple-700 text-white px-5 py-2.5 rounded-lg font-bold text-sm shadow transition-colors">
+                                        Laporkan Murojaah (WA)
+                                    </button>
+                                </div>
+
                             </div>
-                        )}
+                        </div>
                     </div>
+                );
+            }
+
+            // TAMPILAN DEFAULT (HOME/DASHBOARD)
+            return (
+                <div className="min-h-screen p-4 md:p-8 max-w-4xl mx-auto">
+                    <AppLogo />
+                    
+                    <div className="flex justify-between items-end mb-6">
+                        <div>
+                            <h2 className="text-2xl font-bold text-gray-800">Daftar Santri</h2>
+                            <p className="text-gray-500 text-sm">Kelola progres dan laporan otomatis harian.</p>
+                        </div>
+                        <button onClick={() => setView('register')} className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-lg font-bold shadow-md flex items-center gap-2 transition-all">
+                            <span>+</span> Tambah Santri
+                        </button>
+                    </div>
+
+                    {santriList.length === 0 ? (
+                        <div className="bg-white rounded-xl p-10 text-center shadow border border-gray-100">
+                            <span className="text-5xl mb-4 block">📖</span>
+                            <h3 className="text-xl font-bold text-gray-700 mb-2">Belum ada data</h3>
+                            <p className="text-gray-500">Silakan tambah santri untuk membuat jadwal otomatis.</p>
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {santriList.map((santri) => (
+                                <div key={santri.id} className="bg-white rounded-xl p-5 shadow-sm border border-emerald-100 hover:shadow-md transition-shadow">
+                                    <div className="flex justify-between items-start mb-4">
+                                        <div>
+                                            <h3 className="font-bold text-lg text-gray-800">{santri.nama}</h3>
+                                            <p className="text-sm text-emerald-600 font-semibold">Progres: {hitungJuzSekarang(santri.currentPage)} Juz</p>
+                                        </div>
+                                        <span className="bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded font-bold border">
+                                            {santri.targetHarian} Hal/Hari
+                                        </span>
+                                    </div>
+                                    <button onClick={() => { setActiveSantri(santri); setView('detail'); }} className="w-full bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 py-2 rounded-lg font-bold text-sm transition-colors">
+                                        Buka Panel Setoran ➔
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                    )}
                 </div>
             );
         }
