@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mutqin Tracker</title>
+    <!-- Memuat Tailwind CSS untuk Desain -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Memuat Mesin React -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body class="bg-gray-50">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState } = React;
+
+        function App() {
+            const [logHarian, setLogHarian] = useState({
+                namaSantri: '', emailPenyimak: '', noWaPenyimak: '',
+                totalHafalan: '', ziyadah: '', takrirSelesai: false,
+                murojaah: '', jadwalBerikutnya: ''
+            });
+            const [isSaved, setIsSaved] = useState(false);
+
+            const handleChange = (e) => {
+                const { name, value, type, checked } = e.target;
+                setLogHarian(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
+            };
+
+            const handleSimpan = (e) => {
+                e.preventDefault();
+                setIsSaved(true);
+            };
+
+            const buatLinkGoogleCalendar = () => {
+                const baseUrl = "https://calendar.google.com/calendar/render?action=TEMPLATE";
+                const title = encodeURIComponent(`Setoran Hafalan: ${logHarian.namaSantri}`);
+                const details = encodeURIComponent(`Target Murojaah & Ziyadah.\nSiapkan Takrir 5 halaman terakhir.`);
+                const dateStr = logHarian.jadwalBerikutnya.replace(/[-:]/g, '').replace('T', 'T') + '00Z'; 
+                window.open(`${baseUrl}&text=${title}&details=${details}&dates=${dateStr}/${dateStr}&add=${logHarian.emailPenyimak}`, '_blank');
+            };
+
+            const kirimEmail = () => {
+                const subject = encodeURIComponent(`Laporan Hafalan: ${logHarian.namaSantri}`);
+                const body = encodeURIComponent(`Assalamu'alaikum,\n\nBerikut laporan setoran hari ini:\n- Nama: ${logHarian.namaSantri}\n- Ziyadah: ${logHarian.ziyadah}\n- Murojaah: ${logHarian.murojaah}\n- Takrir 5 Halaman: ${logHarian.takrirSelesai ? 'Selesai' : 'Belum'}\n\nJazakumullah khairan.`);
+                window.open(`mailto:${logHarian.emailPenyimak}?subject=${subject}&body=${body}`, '_blank');
+            };
+
+            const kirimWhatsApp = () => {
+                const text = encodeURIComponent(`*Laporan Setoran Hafalan*\n\n👤 Nama: ${logHarian.namaSantri}\n📖 Ziyadah: ${logHarian.ziyadah}\n🔄 Murojaah: ${logHarian.murojaah}\n✅ Takrir 5 Hal: ${logHarian.takrirSelesai ? 'Sudah disetor' : 'Belum'}\n\nMohon siapkan waktu untuk jadwal berikutnya. Terima kasih.`);
+                let phone = logHarian.noWaPenyimak;
+                if (phone.startsWith('0')) phone = '62' + phone.substring(1);
+                window.open(`https://wa.me/${phone}?text=${text}`, '_blank');
+            };
+
+            return (
+                <div className="min-h-screen p-6 font-sans">
+                    <div className="max-w-2xl mx-auto bg-white p-8 rounded-xl shadow-md border-t-4 border-emerald-600">
+                        <h1 className="text-2xl font-bold text-emerald-700 mb-2 text-center">Mutqin Tracker</h1>
+                        <p className="text-center text-gray-500 mb-8 text-sm">Aplikasi Pencatatan Hafalan & Notifikasi Otomatis</p>
+
+                        {!isSaved ? (
+                            <form onSubmit={handleSimpan} className="space-y-4">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">Nama Santri</label>
+                                        <input type="text" name="namaSantri" required onChange={handleChange} className="w-full border rounded-md p-2 bg-gray-50 focus:ring-emerald-500" />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">Total Hafalan (Juz)</label>
+                                        <input type="number" name="totalHafalan" required onChange={handleChange} className="w-full border rounded-md p-2 bg-gray-50" />
+                                    </div>
+                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">Email Penyimak (Musyrif)</label>
+                                        <input type="email" name="emailPenyimak" placeholder="ustadz@gmail.com" onChange={handleChange} className="w-full border rounded-md p-2 bg-gray-50" />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">No. WA Penyimak</label>
+                                        <input type="tel" name="noWaPenyimak" placeholder="08123456789" onChange={handleChange} className="w-full border rounded-md p-2 bg-gray-50" />
+                                    </div>
+                                </div>
+                                <div className="pt-4 border-t border-gray-100">
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Ziyadah (Baru) & Halaman</label>
+                                    <input type="text" name="ziyadah" placeholder="Al-Baqarah 1-5 (1 Hal)" onChange={handleChange} className="w-full border rounded-md p-2 bg-gray-50" />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Murojaah (Sesuai rasio hafalan)</label>
+                                    <input type="text" name="murojaah" placeholder="Juz 1" onChange={handleChange} className="w-full border rounded-md p-2 bg-gray-50" />
+                                </div>
+                                <div className="flex items-center mt-4 p-3 bg-emerald-50 rounded-md border border-emerald-100">
+                                    <input type="checkbox" name="takrirSelesai" id="takrir" onChange={handleChange} className="w-5 h-5 accent-emerald-600 rounded" />
+                                    <label htmlFor="takrir" className="ml-3 text-sm text-emerald-800 font-medium">
+                                        Selesai Takrir 5 Halaman Terakhir
+                                    </label>
+                                </div>
+                                <div className="pt-4 border-t border-gray-100">
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Jadwal Setoran Berikutnya</label>
+                                    <input type="datetime-local" name="jadwalBerikutnya" onChange={handleChange} className="w-full border rounded-md p-2 bg-gray-50" />
+                                </div>
+                                <button type="submit" className="w-full bg-emerald-600 text-white py-3 px-4 rounded-md font-bold hover:bg-emerald-700 transition-colors mt-6 shadow-sm">
+                                    Simpan Data & Buat Laporan
+                                </button>
+                            </form>
+                        ) : (
+                            <div className="text-center py-6">
+                                <div className="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl font-bold">✓</div>
+                                <h2 className="text-2xl font-bold text-gray-800 mb-2">Alhamdulillah!</h2>
+                                <p className="text-gray-600 mb-8 text-sm">Pilih metode pengiriman laporan ke Musyrif.</p>
+                                
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                    <button onClick={buatLinkGoogleCalendar} className="bg-blue-600 text-white p-3 rounded-md hover:bg-blue-700 flex flex-col items-center shadow-sm">
+                                        <span className="font-bold">Google Calendar</span>
+                                        <span className="text-xs font-normal mt-1 text-blue-100">Buat Alarm Jadwal</span>
+                                    </button>
+                                    <button onClick={kirimWhatsApp} className="bg-green-500 text-white p-3 rounded-md hover:bg-green-600 flex flex-col items-center shadow-sm">
+                                        <span className="font-bold">WhatsApp</span>
+                                        <span className="text-xs font-normal mt-1 text-green-100">Kirim Laporan Instan</span>
+                                    </button>
+                                    <button onClick={kirimEmail} className="bg-gray-700 text-white p-3 rounded-md hover:bg-gray-800 flex flex-col items-center shadow-sm">
+                                        <span className="font-bold">Email</span>
+                                        <span className="text-xs font-normal mt-1 text-gray-300">Kirim Rekap Formal</span>
+                                    </button>
+                                </div>
+                                <button onClick={() => setIsSaved(false)} className="mt-8 text-emerald-600 font-medium hover:underline">
+                                    + Input Santri Lain
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
